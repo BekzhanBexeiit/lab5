@@ -1,3 +1,5 @@
+// Курс картасы — /courses бетінде grid-та көрінеді
+// Басса /courses/{id} бетіне өтеді
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

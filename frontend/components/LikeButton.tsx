@@ -1,15 +1,16 @@
-"use client"; // Браузерде жұмыс істейді — onClick керек
+"use client"; // Client Component — браузерде onClick істейді
 
 import { useState } from "react";
 import type { Course } from "@/lib/courses";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL; // Браузерге жететін айнымалы
 
 type LikeButtonProps = {
-  courseId: string;    // қай курсқа like басылды
-  initialLikes: number; // backend-тен келген бастапқы сан
+  courseId: string;
+  initialLikes: number; // Бет ашылғанда бастапқы мән
 };
 
+// ❤ батырмасы — бассаң like +1 болады
 export default function LikeButton({ courseId, initialLikes }: LikeButtonProps) {
   const [likes, setLikes] = useState<number>(initialLikes);
   const [failed, setFailed] = useState(false);
@@ -17,14 +18,16 @@ export default function LikeButton({ courseId, initialLikes }: LikeButtonProps) 
   async function handleClick() {
     setFailed(false);
     try {
-      // POST /courses/{courseId}/like — backend likes санын +1 арттырады
+      // POST /courses/{id}/like — backend likes санын арттырады
+      // Body жоқ, header жоқ → preflight OPTIONS жоқ (simple request)
       const res = await fetch(`${API}/courses/${courseId}/like`, {
         method: "POST",
       });
       if (!res.ok) throw new Error(`API error: ${res.status}`);
-      // Backend жаңартылған курсты қайтарады — одан жаңа likes санын аламыз
+      
+      // Backend жаңартылған курсты қайтарады
       const course: Course = await res.json();
-      setLikes(course.likes); // likes + 1 емес, сервердің нақты санын қоямыз
+      setLikes(course.likes); // Экранда жаңа санды көрсетеміз
     } catch {
       setFailed(true);
     }

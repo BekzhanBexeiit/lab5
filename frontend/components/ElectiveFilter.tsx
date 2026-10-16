@@ -1,27 +1,26 @@
-"use client"; // Бұл компонент браузерде жұмыс істейді (Client Component)
+"use client"; // Client Component — браузер тікелей API-ға сұраныс жібереді
 
 import { useState } from "react";
-import useSWR from "swr"; // SWR — браузерден API-ға сұраныс жіберетін кітапхана
-import type { Course } from "@/lib/courses"; // тек тип импортталады, модуль емес
+import useSWR from "swr"; // SWR — деректерді жүктейтін кітапхана
+import type { Course } from "@/lib/courses";
 
-// NEXT_PUBLIC_ префиксі бар айнымалы браузерге де жетеді
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL; // Браузерге жететін айнымалы
 
-// SWR-ге URL беріледі, fetcher сол URL-ден деректер алады
+// URL-ден деректер алатын функция
 async function fetcher(url: string): Promise<Course[]> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }
 
+// Checkbox бар сүзгі — белгілесең тек elective курстар шығады
 export function ElectiveFilter() {
-  // onlyElective — checkbox күйі (true/false)
-  const [onlyElective, setOnlyElective] = useState(false);
+  const [onlyElective, setOnlyElective] = useState(false); // Checkbox күйі
 
-  // Checkbox қосулы болса ?is_elective=true параметрін қосамыз
+  // Checkbox қосулы болса URL-ге ?is_elective=true қосамыз
   const query = onlyElective ? "?is_elective=true" : "";
 
-  // SWR query өзгергенде автоматты түрде қайта сұраныс жібереді
+  // SWR — query өзгергенде автоматты жаңа сұраныс жібереді
   const { data, error, isLoading } = useSWR(`${API}/courses${query}`, fetcher);
 
   return (

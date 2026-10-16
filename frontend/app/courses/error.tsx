@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+// Backend өшіп тұрса немесе қате болса көрінеді
+// "Try again" басса қайта сұраныс жібереді
 export default function Error({
   error,
   reset,
@@ -11,14 +13,14 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    console.error(error); // Қатені консольге шығарады
   }, [error]);
 
   const router = useRouter();
 
   function handleRetry() {
-    router.refresh();
-    reset();
+    router.refresh(); // Бетті жаңартады
+    reset(); // Error күйін тазалайды
   }
 
   return (

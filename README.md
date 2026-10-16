@@ -2,42 +2,42 @@
 
 > **Advanced Web Technologies** · Bekzhan Bexeiit
 
-Бұл лабораторияда Next.js frontend пен FastAPI backend-і байланыстырылады.
-Браузер тікелей API-ға сұраныс жібереді — CORS, camelCase JSON, like батырмасы және тіркелу формасы іске асырылған.
+This lab connects a Next.js frontend with a FastAPI backend.
+The browser makes direct requests to the API — CORS, camelCase JSON, a like button, and an enrollment form are all implemented.
 
 ---
 
-## 📁 Жоба құрылымы
+## 📁 Project Structure
 
 ```
 lab5/
-├── backend/          # FastAPI — Python (Лаб 4 негізінде)
-│   ├── main.py       # CORS, барлық роутлар
+├── backend/          # FastAPI — Python (based on Lab 4)
+│   ├── main.py       # CORS, all routes
 │   ├── models.py     # CamelModel, Course, Enrollment
-│   ├── data.py       # 6 курс деректері
+│   ├── data.py       # 6 course records
 │   └── requirements.txt
 │
-└── frontend/         # Next.js 15 — TypeScript (Лаб 1 негізінде)
+└── frontend/         # Next.js 15 — TypeScript (based on Lab 1)
     ├── app/
-    │   ├── courses/          # /courses және /courses/[id] беттері
-    │   │   ├── error.tsx     # backend өшсе көрінеді
-    │   │   └── [id]/page.tsx # курс беті + Like + Форма
-    │   └── filter/page.tsx   # Elective сүзгісі беті
+    │   ├── courses/          # /courses and /courses/[id] pages
+    │   │   ├── error.tsx     # shown when backend is down
+    │   │   └── [id]/page.tsx # course page + Like + Form
+    │   └── filter/page.tsx   # Elective filter page
     ├── components/
-    │   ├── ElectiveFilter.tsx # SWR — браузерден тікелей сұраныс
+    │   ├── ElectiveFilter.tsx # SWR — direct browser request
     │   ├── LikeButton.tsx    # POST /courses/{id}/like
     │   └── EnrollForm.tsx    # POST /enrollments
-    └── lib/courses.ts        # getCourses, getCourse → API-дан алады
+    └── lib/courses.ts        # getCourses, getCourse → fetches from API
 ```
 
 ---
 
-## 🚀 Іске қосу
+## 🚀 Running the Project
 
-**Backend алдымен, Frontend кейін:**
+**Start the backend first, then the frontend:**
 
 ```powershell
-# Терминал 1 — Backend
+# Terminal 1 — Backend
 cd backend
 python -m venv .venv
 .venv\Scripts\Activate.ps1
@@ -45,111 +45,122 @@ pip install -r requirements.txt
 fastapi dev main.py
 # → http://localhost:8000
 
-# Терминал 2 — Frontend
+# Terminal 2 — Frontend
 cd frontend
 npm install
-# .env.local файлын жасаңыз (төменде)
+# create .env.local (see below)
 npm run dev
 # → http://localhost:3000
 ```
 
 ---
 
-## ⚙️ Орта айнымалылары
+## ⚙️ Environment Variables
 
-`frontend/.env.local` файлын жасаңыз:
+Create a `frontend/.env.local` file:
 
 ```
 API_URL=http://localhost:8000
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-- `API_URL` — тек Next.js сервері қолданады (Server Components)
-- `NEXT_PUBLIC_API_URL` — браузерге де жетеді (Client Components)
+- `API_URL` — used only by the Next.js server (Server Components)
+- `NEXT_PUBLIC_API_URL` — also sent to the browser (Client Components)
 
-`.env.local` файлы `.gitignore`-да — репозиторийге кірмейді.
+`.env.local` is in `.gitignore` and will not be committed.
 
 ---
 
-## 🌐 Беттер
+## 🌐 Pages
 
-| Адрес | Не көрінеді |
+| URL | Description |
 |---|---|
-| http://localhost:3000/courses | 6 курс картасы (backend-тен) |
-| http://localhost:3000/courses/web-security | Курс беті + ❤ + Тіркелу формасы |
+| http://localhost:3000/courses | 6 course cards (from backend) |
+| http://localhost:3000/courses/web-security | Course page + ❤ + Enrollment form |
 | http://localhost:3000/filter | Elective checkbox (SWR) |
-| http://localhost:8000/docs | API Swagger документациясы |
+| http://localhost:8000/docs | API Swagger documentation |
 
 ---
 
-## 📡 API Роутлары
+## 📡 API Routes
 
-| Метод | Адрес | Не істейді |
+| Method | Path | Description |
 |---|---|---|
-| GET | `/courses` | Курстар тізімі (сүзгі, сорт, беттеу) |
-| GET | `/courses/{id}` | Бір курс немесе 404 |
+| GET | `/courses` | Course list (filter, sort, pagination) |
+| GET | `/courses/{id}` | Single course or 404 |
 | POST | `/courses/{id}/like` | Like +1 |
-| POST | `/enrollments` | Тіркелу жасайды → 201 |
-| GET | `/enrollments` | Тіркелулер тізімі |
+| POST | `/enrollments` | Create enrollment → 201 |
+| GET | `/enrollments` | List all enrollments |
 
 ---
 
-## 🔑 Лаб 5 негізгі тақырыптары
+## 🔑 Key Topics — Lab 5
 
-**CORS** — браузер басқа origin-нан (localhost:3000 → localhost:8000) сұраныс жібергенде сервер рұқсат беруі керек. `CORSMiddleware` тек `http://localhost:3000`-ге рұқсат береді.
+**CORS** — when the browser makes a request from one origin (localhost:3000) to another (localhost:8000), the server must explicitly grant permission. `CORSMiddleware` allows only `http://localhost:3000`.
 
-**camelCase JSON** — Python snake_case (`is_elective`) автоматты түрде JSON camelCase-ке (`isElective`) ауысады. TypeScript типтері сәйкес келеді.
+**camelCase JSON** — Python snake_case (`is_elective`) is automatically converted to camelCase (`isElective`) in JSON responses. TypeScript types match accordingly.
 
-**Preflight (OPTIONS)** — форма `Content-Type: application/json` жібергенде браузер алдымен OPTIONS сұранысын жібереді. Like батырмасы header-сіз POST жібереді — preflight жоқ.
+**Preflight (OPTIONS)** — when the enrollment form sends `Content-Type: application/json`, the browser first sends an OPTIONS request to check permissions. The like button sends a POST with no body and no custom headers — no preflight needed.
 
-**Server vs Client requests** — `/courses` беті Next.js сервері арқылы деректер алады (CORS керек емес). Filter, Like, Форма — браузердің өзі жібереді (CORS міндетті).
-
----
-
-## 📝 Шешімдер туралы
-
-**generateStaticParams неге жойылды?**
-`generateStaticParams` build кезінде `getCourses()` шақырады. Backend өшіп тұрса build сәтсіз аяқталады. Курс деректері backend-те тұрады және кез келген уақытта өзгеруі мүмкін — алдын ала build жасаудың мәні жоқ.
-
-**Like неге preflight-сіз, форма неге preflight-пен?**
-Like — body жоқ, арнайы header жоқ → "simple request" → preflight жоқ.
-Форма — `Content-Type: application/json` header-і бар → "non-simple request" → браузер алдымен OPTIONS жібереді.
+**Server vs Client requests** — the `/courses` page fetches data through the Next.js server (no CORS needed). ElectiveFilter, LikeButton, and EnrollForm fetch directly from the browser (CORS required).
 
 ---
 
-## 🔴 Breakage журналы
+## 📝 Decisions
 
-### Breakage 1: CORS мүлдем өшірілді
-- **Не істедім:** `app.add_middleware(...)` блогін түгел comment-тедім
+**Why was `generateStaticParams` removed from `/courses/[id]`?**
+`generateStaticParams` runs during `npm run build` and calls `getCourses()`, which makes an HTTP request to the backend. If the backend is not running at build time, the build fails. Removing it keeps the build self-contained and ensures each page always shows fresh data.
+
+**Why does the like button need no preflight, but the enrollment form does?**
+The like is a POST with no body and no custom headers — it qualifies as a "simple request" under the CORS spec. The enrollment form sends `Content-Type: application/json`, which triggers a preflight OPTIONS request before the actual POST.
+
+---
+
+## 🔴 Breakage Journal
+
+### Breakage 1: CORS completely disabled
+- **What I did:** commented out the entire `app.add_middleware(...)` block
 - **Console:** `No 'Access-Control-Allow-Origin' header is present on the requested resource`
-- **Network:** courses — қызыл (CORS error), backend логінде 200 OK
-- **Себебі:** CORS middleware жоқ — сервер орындады бірақ браузерге рұқсат бермеді
-- **Қалай таптым:** 3-қадам — response headers-та `access-control-allow-origin` жоқ
+- **Network:** courses — red (CORS error), backend log shows 200 OK
+- **Cause:** no CORS middleware — server executed the request but gave the browser no permission to read the response
+- **How I found it:** Step 3 — no `access-control-allow-origin` header in response headers
 
-### Breakage 2: allow_origins-та trailing slash
-- **Не істедім:** `"http://localhost:3000"` → `"http://localhost:3000/"`
-- **Console:** сол хабарлама
-- **Network:** форма OPTIONS → 400, POST жіберілмеді
-- **Себебі:** `"http://localhost:3000/"` ешқандай origin-мен сәйкес келмейді
-- **Қалай таптым:** 3-қадам — header бар бірақ мән сәйкес емес
+### Breakage 2: Trailing slash in `allow_origins`
+- **What I did:** changed `"http://localhost:3000"` to `"http://localhost:3000/"`
+- **Console:** same error message
+- **Network:** form OPTIONS → 400, POST was never sent
+- **Cause:** `"http://localhost:3000/"` does not match any browser origin
+- **How I found it:** Step 3 — header present but value did not match
 
-### Breakage 3: allow_methods жойылды
-- **Не істедім:** `allow_methods=["*"]` жолын өшірдім
+### Breakage 3: `allow_methods` deleted
+- **What I did:** deleted `allow_methods=["*"]` from `app.add_middleware`
 - **Console:** `It does not have HTTP ok status`
-- **Network:** /filter OK, Like OK, Форма OPTIONS → 400
-- **Себебі:** тек GET рұқсатты, POST жоқ
-- **Қалай таптым:** 2-қадам — OPTIONS 400, curl-мен тексердім: `Disallowed CORS method`
+- **Network:** /filter OK, Like OK, Form OPTIONS → 400
+- **Cause:** only GET was allowed by default, POST was rejected
+- **How I found it:** Step 2 — OPTIONS returned 400, confirmed with curl: `Disallowed CORS method`
 
-### Breakage 4: Басқа origin (127.0.0.1)
-- **Не істедім:** `http://127.0.0.1:3000/filter` деп аштым
+### Breakage 4: Wrong origin — opened at `http://127.0.0.1:3000`
+- **What I did:** opened the app at `http://127.0.0.1:3000/filter`
 - **Console:** `from origin 'http://127.0.0.1:3000' has been blocked`
-- **Network:** courses қызыл, backend 200 OK
-- **Себебі:** `localhost` ≠ `127.0.0.1` — браузерге екі түрлі origin
-- **Қалай таптым:** 3-қадам — Origin header `127.0.0.1:3000`, allow_origins-та жоқ
+- **Network:** courses red, backend shows 200 OK
+- **Cause:** `localhost` and `127.0.0.1` are different origins to the browser
+- **How I found it:** Step 3 — Origin header showed `127.0.0.1:3000`, not in `allow_origins`
 
-### Breakage 5: Python қатесі CORS сияқты көрінді
-- **Не істедім:** `p["offset"]` → `p["ofset"]` деп теріп жіберді
-- **Console:** `No 'Access-Control-Allow-Origin' header` — CORS сияқты!
-- **Network:** courses қызыл. Backend логінде: `500 Internal Server Error`, `KeyError: 'ofset'`
-- **Себебі:** 500 жауабы CORSMiddleware-дің сыртынан шығады — header-лер жоқ
-- **Қалай таптым:** 5-қадам — backend терминалында traceback көрдім
+### Breakage 5: Python error looked like a CORS error
+- **What I did:** changed `p["offset"]` to `p["ofset"]` (typo)
+- **Console:** `No 'Access-Control-Allow-Origin' header` — looks like CORS!
+- **Network:** courses red. Backend log: `500 Internal Server Error`, `KeyError: 'ofset'`
+- **Cause:** an unhandled exception produces a 500 response outside `CORSMiddleware`, so it has no CORS headers
+- **How I found it:** Step 5 — checked the FastAPI terminal and saw a traceback
+
+---
+
+## 📦 Tech Stack
+
+- [Next.js 15](https://nextjs.org/) — App Router, Server Components
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [SWR](https://swr.vercel.app/) — client-side data fetching
+- [FastAPI](https://fastapi.tiangolo.com/) — Python backend
+- [Pydantic v2](https://docs.pydantic.dev/) — data validation and camelCase aliases

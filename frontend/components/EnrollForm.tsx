@@ -1,50 +1,49 @@
-"use client"; // Браузерде жұмыс істейді — форма, useState керек
+"use client"; // Client Component — форма браузерде істейді
 
 import { useState, type FormEvent } from "react";
 import type { Enrollment } from "@/lib/courses";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL; // Браузерге жететін айнымалы
 
 type EnrollFormProps = {
-  courseId: string; // қай курсқа тіркелу
+  courseId: string; // Қай курсқа тіркелу
 };
 
-// Форманың мүмкін күйлері
 type Status = "idle" | "sending" | "done" | "rejected" | "error";
 
+// Курсқа тіркелу формасы — аты жазып Submit басасың
 export function EnrollForm({ courseId }: EnrollFormProps) {
   const [studentName, setStudentName] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault(); // беттің қайта жүктелуін болдырмайды
+    e.preventDefault(); // Беттің қайта жүктелуін тоқтатамыз
     setStatus("sending");
     try {
-      // POST /enrollments — JSON body жіберіледі
-      // Content-Type: application/json болмаса backend 422 қатесін береді
+      // POST /enrollments — JSON body: { courseId, studentName }
+      // Content-Type: application/json → браузер preflight OPTIONS жібереді алдымен
       const res = await fetch(`${API}/enrollments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ courseId, studentName }),
       });
 
+      // 422 — backend деректерді қабылдамады (мысалы: атау 2 символдан кем)
       if (res.status === 422) {
-        // Backend деректерді қабылдамады (мысалы атау тым қысқа)
-        // detail[0].msg-де себебі жазылған
         const body = await res.json();
-        setMessage(body.detail[0].msg);
+        setMessage(body.detail[0].msg); // Қате себебі
         setStatus("rejected");
         return;
       }
       if (!res.ok) throw new Error(`API error: ${res.status}`);
 
-      // 201 Created — тіркелу сәтті, id-ді пайдаланушыға көрсетеміз
+      // 201 Created — сәтті! Backend id қайтарады (1, 2, 3...)
       const enrollment: Enrollment = await res.json();
       setMessage(`Enrollment number: ${enrollment.id}`);
       setStatus("done");
     } catch {
-      setStatus("error");
+      setStatus("error"); // Backend өшіп тұрса немесе желі қатесі
     }
   }
 
@@ -64,6 +63,7 @@ export function EnrollForm({ courseId }: EnrollFormProps) {
       >
         Enroll
       </button>
+      {/* Статус хабарламалары */}
       {status === "done" && (
         <p className="text-green-700">You are enrolled. {message}</p>
       )}

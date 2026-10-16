@@ -86,19 +86,19 @@ allow_headers=["*"]
 
 **Why it is needed:** The Next.js frontend runs on `http://localhost:3000` and makes direct browser requests to `http://localhost:8000`. These are cross-origin requests — the browser blocks them unless the server explicitly grants permission via CORS headers. Without CORSMiddleware, the browser hides the responses from JavaScript even though the server executes the requests successfully.
 
-Only `http://localhost:3000` is listed — other origins (e.g. `http://127.0.0.1:3000`, `http://evil.example`) receive no `access-control-allow-origin` header and are blocked by the browser.
+Only `http://localhost:3000` is listed — other origins (e.g. `http://127.0.0.1:3000`) receive no `access-control-allow-origin` header and are blocked by the browser.
 
 ---
 
 ### camelCase JSON via `CamelModel`
 
-All models now inherit from `CamelModel`:
+All models inherit from `CamelModel`:
 
 ```python
 class CamelModel(BaseModel):
     model_config = ConfigDict(
         alias_generator=to_camel,   # is_elective → isElective in JSON
-        validate_by_name=True,      # data.py can still use field names
+        validate_by_name=True,      # data.py can still use Python field names
         validate_by_alias=True,     # clients can send camelCase too
     )
 ```
@@ -120,7 +120,7 @@ Example response from `GET /courses`:
 
 ### New routes
 
-**`POST /courses/{course_id}/like`**  
+**`POST /courses/{course_id}/like`**
 Increments `likes` by 1 and returns the updated course.
 ```json
 // POST /courses/web-security/like → 200
@@ -147,14 +147,14 @@ Increments `likes` by 1 and returns the updated course.
 {"detail": "Course not found"}
 ```
 
-**Note:** likes and enrollments are stored in memory and reset on every server restart (`fastapi dev` restarts on every file save). Persistent storage will be added in week 6–7 with PostgreSQL.
+**Note:** likes and enrollments are stored in memory and reset on every server restart. Persistent storage will be added in a later lab with PostgreSQL.
 
 ---
 
 ## 📦 Project Structure
 
 ```
-course-catalog-api/
+backend/
 ├── main.py       # FastAPI app, CORS, all routes
 ├── models.py     # CamelModel, Course, EnrollmentIn, Enrollment
 ├── data.py       # 6 courses + get_all_courses / find_course
